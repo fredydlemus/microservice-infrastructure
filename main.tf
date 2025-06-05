@@ -1,60 +1,43 @@
-module "vpc"{
-    source = "terraform-aws-modules/vpc/aws"
-    version = "2.47.0"
-    
-    name = "${var.cluster_name}-vpc"
-    cidr = var.vpc_cidr
-    azs = slice(data.aws_availability_zones.available.names, 0, 3)
-    public_subnets = var.public_subnet_cidrs
-    private_subnets = var.private_subnet_cidrs
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.21.0"
 
-    enable_nat_gateway = true
-    single_nat_gateway = true
+  name            = "${var.cluster_name}-vpc"
+  cidr            = var.vpc_cidr
+  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+  public_subnets  = var.public_subnet_cidrs
 
-    tags = {
-        "Name" = "${var.cluster_name}-vpc"
-    }
+  enable_nat_gateway = false
+  single_nat_gateway = false
+
+  tags = {
+    "Name" = "${var.cluster_name}-vpc"
+  }
 }
 
 data "aws_availability_zones" "available" {}
 
-module "eks"{
-    source = "terraform-aws-modules/eks/aws"
-    version = "25.1.0"
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "20.31"
 
-    cluster_name = var.cluster_name
-    cluster_version = "1.27"
-    subnets = module.vpc.private_subnets
-    vpc_id = module.vpc.vpc_id
+  cluster_name    = var.cluster_name
+  cluster_version = "1.31"
 
-    cluster_enabled_log_types = [
-        "api",
-        "audit",
-        "authenticator",
-        "controllerManager",
-        "scheduler"
-    ]
+  cluster_endpoint_public_access = true
 
-    node_groups = {
-        default_nodes = {
-            desired_capacity = var.node_group_desired_capacity
-            max_capacity     = var.node_group_desired_capacity + 1
-            min_capacity     = var.node_group_desired_capacity
-            
-            instance_types = [var.node_group_instance_type]
-            key_name = ""
-            disk_size = 20
+  enable_cluster_creator_admin_permissions = true
 
-            additional_tags = {
-                Name = "${var.cluster_name}-node"
-            }
-        }
-    }
+  cluster_compute_config = {
+    enabled    = true
+    node_pools = ["general-purpose"]
+  }
 
-    manage_aws_auth = true
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.public_subnets
 
-    tags = {
-        "Environment" = "dev"
-        "Terraform"   = "true"
-    }
+  tags = {
+    Environment = "dev"
+    Terraform   = "true"
+  }
 }
