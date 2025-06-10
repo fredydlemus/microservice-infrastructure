@@ -1,0 +1,64 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+      TF_VAR_cluster_name: ${{ vars.TF_CLUSTER_NAME || format('eks-cluster-{0}', github.event.inputs.environment) }}
+      TF_VAR_vpc_cidr: ${{ vars.TF_VPC_CIDR || '10.0.0.0/16' }}
+      TF_VAR_node_group_instance_type: ${{ vars.TF_NODE_INSTANCE_TYPE || 't3.medium' }}
+      TF_VAR_node_group_desired_capacity: ${{ vars.TF_NODE_DESIRED_CAPACITY || '3' }}
+      TF_VAR_public_subnet_cidrs: ${{ vars.TF_PUBLIC_SUBNET_CIDRS || '["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]' }}
+      TF_VAR_private_subnet_cidrs: ${{ vars.TF_PRIVATE_SUBNET_CIDRS || '["10.0.11.0/24","10.0.12.0/24","10.0.13.0/24"]' }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
