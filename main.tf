@@ -59,7 +59,7 @@ resource "aws_security_group" "aurora_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -91,7 +91,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
   port               = var.db_port
 
   db_subnet_group_name   = aws_db_subnet_group.aurora_subnet_group.name
-  vpc_security_group_ids = [aws.security_groups.aurora_sg.id]
+  vpc_security_group_ids = [aws_security_group.aurora_sg.id]
 
   availability_zones  = module.vpc.azs
   skip_final_snapshot = true
