@@ -39,3 +39,39 @@ variable "node_group_instance_type" {
   type        = string
   default     = "t3.medium"
 }
+
+variable "db_name" {
+  description = "The name of the database"
+  type        = string
+  default     = "mydb"
+}
+
+variable "db_username" {
+  description = "The username for the database"
+  type        = string
+  default     = "admin"
+}
+
+variable "db_password" {
+  description = "The password for the database"
+  type        = string
+  default     = "password123"
+}
+
+variable "db_instance_class" {
+  description = "The instance class for the database"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_instances_count" {
+  description = "Number of Aurora reader instances"
+  type        = number
+  default     = 2
+}
+
+variable "db_port" {
+  description = "TCP port for the database"
+  type        = number
+  default     = 5432
+}

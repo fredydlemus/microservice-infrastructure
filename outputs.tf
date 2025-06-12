@@ -18,35 +18,12 @@ output "security_group_id" {
   value       = module.eks.cluster_security_group_id
 }
 
-# output "kubeconfig" {
-#   description = "Kubeconfig file content"
-#   value       = <<EOT
-# apiVersion: v1
-# clusters:
-# - cluster:
-#     server: ${module.eks.cluster_endpoint}
-#     certificate-authority-data: ${module.eks.cluster_certificate_authority_data}
-#   name: kubernetes
-# contexts:
-# - context:
-#     cluster: kubernetes
-#     user: aws
-#   name: aws
-# current-context: aws
-# kind: Config
-# preferences: {}
-# users:
-# - name: aws
-#   user:
-#     exec:
-#       apiVersion: client.authentication.k8s.io/v1alpha1
-#       command: aws
-#       args:
-#         - "eks"
-#         - "get-token"
-#         - "--cluster-name"
-#         - "${module.eks.cluster_id}"
-#         - "--region"
-#         - "${var.aws_region}"
-# EOT
-# }
+output "aurora_writer_endpoint" {
+  description = "Aurora Writer Endpoint"
+  value       = aws_rds_cluster.aurora_cluster.endpoint
+}
+
+output "aurora_reader_endpoint" {
+  description = "Aurora Reader Endpoint"
+  value       = aws_rds_cluster.aurora_cluster.reader_endpoint
+}
