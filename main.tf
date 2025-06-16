@@ -43,6 +43,7 @@ module "eks" {
 }
 
 resource "aws_security_group" "aurora_sg" {
+  count       = var.enable_aurora_db ? 1 : 0
   name        = "${var.cluster_name}-aurora-sg"
   description = "Allow EKS -> Aurora potgress"
   vpc_id      = module.vpc.vpc_id
@@ -70,6 +71,7 @@ resource "aws_security_group" "aurora_sg" {
 }
 
 resource "aws_db_subnet_group" "aurora_subnet_group" {
+  count       = var.enable_aurora_db ? 1 : 0
   name        = "${var.cluster_name}-aurora-subnet-group"
   subnet_ids  = module.vpc.public_subnets
   description = "Subnet group for Aurora DB instances"
@@ -82,6 +84,7 @@ resource "aws_db_subnet_group" "aurora_subnet_group" {
 }
 
 resource "aws_rds_cluster" "aurora_cluster" {
+  count              = var.enable_aurora_db ? 1 : 0
   cluster_identifier = "${var.cluster_name}-aurora-cluster"
   engine             = "aurora-postgresql"
   engine_version     = "15.4"
@@ -104,6 +107,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
 }
 
 resource "aws_rds_cluster_instance" "writer" {
+  count               = var.enable_aurora_db ? 1 : 0
   identifier          = "${var.cluster_name}-aurora-writer"
   cluster_identifier  = aws_rds_cluster.aurora_cluster.id
   instance_class      = var.db_instance_class
@@ -120,7 +124,7 @@ resource "aws_rds_cluster_instance" "writer" {
 }
 
 resource "aws_rds_cluster_instance" "readers" {
-  count               = var.db_instances_count
+  count               = var.enable_aurora_db ? var.db_instances_count : 0
   identifier          = "${var.cluster_name}-aurora-reader-${count.index + 1}"
   cluster_identifier  = aws_rds_cluster.aurora_cluster.id
   instance_class      = var.db_instance_class

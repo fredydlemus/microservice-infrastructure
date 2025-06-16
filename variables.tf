@@ -56,6 +56,7 @@ variable "db_password" {
   description = "The password for the database"
   type        = string
   default     = "password123"
+  sensitive   = true
 }
 
 variable "db_instance_class" {
@@ -74,4 +75,10 @@ variable "db_port" {
   description = "TCP port for the database"
   type        = number
   default     = 5432
+}
+
+variable "enable_aurora_db" {
+  description = "Enable or disable the Aurora database"
+  type        = bool
+  default     = false
 }

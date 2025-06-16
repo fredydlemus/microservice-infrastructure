@@ -20,10 +20,10 @@ output "security_group_id" {
 
 output "aurora_writer_endpoint" {
   description = "Aurora Writer Endpoint"
-  value       = aws_rds_cluster.aurora_cluster.endpoint
+  value       = var.enable_aurora_db ? aws_rds_cluster.aurora_cluster.endpoint : null
 }
 
 output "aurora_reader_endpoint" {
   description = "Aurora Reader Endpoint"
-  value       = aws_rds_cluster.aurora_cluster.reader_endpoint
+  value       = var.enable_aurora_db ? aws_rds_cluster.aurora_cluster.reader_endpoint : null
 }
