@@ -49,7 +49,7 @@ variable "db_name" {
 variable "db_username" {
   description = "The username for the database"
   type        = string
-  default     = "admin"
+  default     = "fredy"
 }
 
 variable "db_password" {
@@ -62,7 +62,7 @@ variable "db_password" {
 variable "db_instance_class" {
   description = "The instance class for the database"
   type        = string
-  default     = "db.t3.micro"
+  default     = "db.t4g.medium"
 }
 
 variable "db_instances_count" {

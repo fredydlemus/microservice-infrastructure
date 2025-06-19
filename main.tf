@@ -45,7 +45,7 @@ module "eks" {
 resource "aws_security_group" "aurora_sg" {
   count       = var.enable_aurora_db ? 1 : 0
   name        = "${var.cluster_name}-aurora-sg"
-  description = "Allow EKS -> Aurora potgress"
+  description = "Allow EKS Aurora potgress"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -93,8 +93,8 @@ resource "aws_rds_cluster" "aurora_cluster" {
   master_password    = var.db_password
   port               = var.db_port
 
-  db_subnet_group_name   = aws_db_subnet_group.aurora_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.aurora_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.aurora_subnet_group[count.index].name
+  vpc_security_group_ids = [aws_security_group.aurora_sg[count.index].id]
 
   availability_zones  = module.vpc.azs
   skip_final_snapshot = true
@@ -109,10 +109,10 @@ resource "aws_rds_cluster" "aurora_cluster" {
 resource "aws_rds_cluster_instance" "writer" {
   count               = var.enable_aurora_db ? 1 : 0
   identifier          = "${var.cluster_name}-aurora-writer"
-  cluster_identifier  = aws_rds_cluster.aurora_cluster.id
+  cluster_identifier  = aws_rds_cluster.aurora_cluster[count.index].id
   instance_class      = var.db_instance_class
-  engine              = aws_rds_cluster.aurora_cluster.engine
-  engine_version      = aws_rds_cluster.aurora_cluster.engine_version
+  engine              = aws_rds_cluster.aurora_cluster[count.index].engine
+  engine_version      = aws_rds_cluster.aurora_cluster[count.index].engine_version
   publicly_accessible = true
 
   tags = {
@@ -124,12 +124,12 @@ resource "aws_rds_cluster_instance" "writer" {
 }
 
 resource "aws_rds_cluster_instance" "readers" {
-  count               = var.enable_aurora_db ? var.db_instances_count : 0
+  count               = var.enable_aurora_db ? 1 : 0
   identifier          = "${var.cluster_name}-aurora-reader-${count.index + 1}"
-  cluster_identifier  = aws_rds_cluster.aurora_cluster.id
+  cluster_identifier  = aws_rds_cluster.aurora_cluster[count.index].id
   instance_class      = var.db_instance_class
-  engine              = aws_rds_cluster.aurora_cluster.engine
-  engine_version      = aws_rds_cluster.aurora_cluster.engine_version
+  engine              = aws_rds_cluster.aurora_cluster[count.index].engine
+  engine_version      = aws_rds_cluster.aurora_cluster[count.index].engine_version
   publicly_accessible = true
 
   tags = {
